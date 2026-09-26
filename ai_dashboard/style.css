@@ -1,0 +1,135 @@
+/* Custom CSS Styles - Premium Dark Glassmorphism Theme */
+
+:root {
+    --transition-speed: 0.3s;
+}
+
+body {
+    background-color: #0c0e17;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(20, 184, 166, 0.03) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.03) 0, transparent 50%);
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+    background: rgba(22, 25, 43, 0.65);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color var(--transition-speed) ease, 
+                box-shadow var(--transition-speed) ease;
+}
+
+.glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Custom Scrollbar for Logs */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Fan Rotating Animation */
+@keyframes spin-fan {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.spin-fast {
+    animation: spin-fan 0.7s linear infinite;
+}
+
+/* Tech Grid Pattern Overlay */
+.bg-grid {
+    background-size: 24px 24px;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* Conic Gauge Transitions */
+.gauge-circle {
+    transition: background 0.5s ease-in-out;
+}
+
+/* Button Custom Styles */
+.btn-control {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.btn-control.active {
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+}
+
+.btn-control::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 120%;
+    height: 120%;
+    background: rgba(255, 255, 255, 0.03);
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    transition: transform 0.4s ease;
+}
+
+.btn-control:active::after {
+    transform: translate(-50%, -50%) scale(1);
+    transition: 0s;
+}
+
+/* Glowing text and badges */
+.glow-text-green {
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.glow-text-amber {
+    text-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+}
+
+.glow-text-red {
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Blink anim for critical warning */
+@keyframes pulse-border {
+    0%, 100% {
+        border-color: rgba(239, 68, 68, 0.2);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.1);
+    }
+    50% {
+        border-color: rgba(239, 68, 68, 0.6);
+        box-shadow: 0 0 20px 0 rgba(239, 68, 68, 0.25);
+    }
+}
+
+.critical-pulse {
+    animation: pulse-border 1.5s infinite;
+}

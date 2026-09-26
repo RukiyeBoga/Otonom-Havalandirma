@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maden Otomasyonu - Yapay Zeka Destekli Kontrol Paneli</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Orbitron', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#0f111a] text-gray-100 font-sans min-h-screen selection:bg-cyan-500 selection:text-white overflow-x-hidden">
+
+    <!-- Top Glow Effects -->
+    <div class="absolute top-0 left-1/4 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+    <div class="absolute top-0 right-1/4 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        
+        <!-- Header -->
+        <header class="glass-card mb-6 p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/5">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-tr from-cyan-500 to-blue-600 p-3 rounded-xl shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-helmet-safety text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-wide bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">MADEN OTOMASYON SİSTEMİ</h1>
+                    <p class="text-xs text-cyan-400/80 font-mono tracking-widest uppercase mt-0.5">Yapay Zeka Destekli Güvenlik Arayüzü</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-4">
+                <!-- MQTT Status -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/30 border border-white/5">
+                    <span id="mqtt-status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                    <span id="mqtt-status-text" class="text-xs font-mono text-gray-400">Sunucu: Bağlanıyor</span>
+                </div>
+                
+                <!-- ESP32 Status -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/30 border border-white/5">
+                    <i class="fa-solid fa-microchip text-xs text-gray-400" id="esp32-status-icon"></i>
+                    <span id="esp32-status-text" class="text-xs font-mono text-gray-400">ESP32: Bekleniyor</span>
+                </div>
+
+                <!-- Clock -->
+                <div class="text-right hidden sm:block">
+                    <div id="live-time" class="text-sm font-mono text-cyan-400 tracking-wider">00:00:00</div>
+                    <div id="live-date" class="text-[10px] text-gray-500 uppercase tracking-widest">08.06.2026</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Anomaly / Fault Banner -->
+        <div id="fault-banner" class="hidden mb-6 p-4 bg-red-950/40 border border-red-500/30 rounded-2xl flex items-start gap-3 shadow-[0_0_15px_rgba(239,68,68,0.05)] animate-pulse">
+            <i class="fa-solid fa-triangle-exclamation text-red-400 text-lg mt-0.5"></i>
+            <div>
+                <h4 class="text-sm font-bold text-red-400">DONANIM VEYA SENSÖR HATASI TESPİT EDİLDİ!</h4>
+                <p id="fault-banner-text" class="text-xs text-red-200/80 mt-1">Cihaz bağlantıları kopmuş veya hatalı sinyal veriyor olabilir.</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Side: Gauges, Controls, AI Commentary (1 Column) -->
+            <div class="space-y-6 flex flex-col">
+                
+                <!-- Risk Score Card (Radial Gauge) -->
+                <div class="glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden flex-1 min-h-[300px]">
+                    <h3 class="text-sm font-bold text-gray-400 tracking-wider uppercase mb-6 flex items-center gap-2 self-start">
+                        <i class="fa-solid fa-shield-halved text-cyan-400"></i> Genel Risk Skoru
+                    </h3>
+                    
+                    <div class="gauge-container relative w-48 h-48 flex items-center justify-center">
+                        <!-- Conic Gradient Circle behind -->
+                        <div id="risk-gauge" class="gauge-circle w-full h-full rounded-full flex items-center justify-center shadow-inner" style="background: conic-gradient(#10b981 0% 30%, #f59e0b 30% 60%, #f97316 60% 80%, #ef4444 80% 100%, #1a1e2f 100%);">
+                            <!-- Innter Cutout for Donut effect -->
+                            <div class="w-[85%] h-[85%] bg-[#121422] rounded-full flex flex-col items-center justify-center relative shadow-lg">
+                                <span id="risk-number" class="text-5xl font-mono font-bold tracking-tight text-white leading-none">0</span>
+                                <span class="text-[10px] text-gray-500 tracking-widest uppercase font-mono mt-1">RISK %</span>
+                                <span id="risk-badge" class="text-xs font-bold font-mono tracking-wider px-3 py-1 rounded-full mt-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">GÜVENLİ</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full grid grid-cols-4 gap-1 mt-6 text-center text-[10px] font-mono font-semibold text-gray-500">
+                        <div class="border-t border-emerald-500/30 pt-2 text-emerald-400">0-30<br>GÜVENLİ</div>
+                        <div class="border-t border-amber-500/30 pt-2 text-amber-400">30-60<br>DİKKAT</div>
+                        <div class="border-t border-orange-500/30 pt-2 text-orange-400">60-80<br>RİSKLİ</div>
+                        <div class="border-t border-red-500/30 pt-2 text-red-400">80-100<br>ACİL</div>
+                    </div>
+                </div>
+
+                <!-- System Control Panel (Manual & Auto Override) -->
+                <div class="glass-card p-6">
+                    <h3 class="text-sm font-bold text-gray-400 tracking-wider uppercase mb-5 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-cyan-400"></i> Havalandırma Kontrol Paneli
+                    </h3>
+                    
+                    <!-- Fan Status Widget -->
+                    <div class="flex items-center justify-between p-4 bg-black/40 rounded-xl mb-5 border border-white/5">
+                        <div class="flex items-center gap-3">
+                            <div id="fan-icon-bg" class="w-10 h-10 rounded-lg bg-gray-800/80 flex items-center justify-center transition-all duration-300">
+                                <i id="fan-icon" class="fa-solid fa-fan text-gray-400 text-lg transition-transform duration-1000"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 uppercase tracking-widest font-mono">Fan Durumu</div>
+                                <div id="fan-status-text" class="text-sm font-bold text-gray-400">KAPALI</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-gray-500 uppercase tracking-widest font-mono">Çalışma Modu</div>
+                            <div id="fan-mode-badge" class="text-xs font-bold text-cyan-400 bg-cyan-950/30 px-2 py-0.5 rounded border border-cyan-800/30 mt-0.5 inline-block">OTOMATİK (AI)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Control Buttons Grid -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="btn-fan-on" class="btn-control py-3 px-2 rounded-xl text-center flex flex-col items-center gap-1.5 transition-all duration-200 bg-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30 border border-white/5">
+                            <i class="fa-solid fa-power-off text-base"></i>
+                            <span class="text-[10px] font-bold tracking-wider">MANUEL AÇ</span>
+                        </button>
+                        
+                        <button id="btn-fan-off" class="btn-control py-3 px-2 rounded-xl text-center flex flex-col items-center gap-1.5 transition-all duration-200 bg-white/5 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 border border-white/5">
+                            <i class="fa-solid fa-circle-xmark text-base"></i>
+                            <span class="text-[10px] font-bold tracking-wider">MANUEL KAPAT</span>
+                        </button>
+                        
+                        <button id="btn-fan-auto" class="btn-control active py-3 px-2 rounded-xl text-center flex flex-col items-center gap-1.5 transition-all duration-200 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                            <i class="fa-solid fa-robot text-base animate-pulse"></i>
+                            <span class="text-[10px] font-bold tracking-wider">OTOMATİK (AI)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Side: Real-Time Values & AI Comments (2 Columns on MD) -->
+            <div class="space-y-6 lg:col-span-2">
+                
+                <!-- Sensor Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- MQ-7 Card -->
+                    <div class="glass-card p-5 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
+                            <i class="fa-solid fa-skull-crossbones text-6xl"></i>
+                        </div>
+                        <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">MQ-7 (CO) Seviyesi</div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="co-value" class="text-4xl font-mono font-bold">0</span>
+                            <span class="text-xs text-gray-500 font-mono">ADC</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 mt-3 text-xs text-emerald-400" id="co-trend-container">
+                            <i class="fa-solid fa-circle-check" id="co-trend-icon"></i>
+                            <span id="co-trend-text">Kararlı</span>
+                        </div>
+                        <div class="mt-4 w-full bg-gray-800/80 h-1.5 rounded-full overflow-hidden">
+                            <div id="co-progress" class="bg-emerald-500 h-full w-[0%] transition-all duration-500"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-500 font-mono mt-1.5">
+                            <span>0</span>
+                            <span class="text-amber-500/80">900 (Uyarı)</span>
+                            <span class="text-red-500/80">1200 (Kritik)</span>
+                        </div>
+                    </div>
+
+                    <!-- MQ-135 Card -->
+                    <div class="glass-card p-5 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
+                            <i class="fa-solid fa-wind text-6xl"></i>
+                        </div>
+                        <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">MQ-135 (Hava Kalitesi)</div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="air-value" class="text-4xl font-mono font-bold">0</span>
+                            <span class="text-xs text-gray-500 font-mono">ADC</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 mt-3 text-xs text-emerald-400" id="air-trend-container">
+                            <i class="fa-solid fa-circle-check" id="air-trend-icon"></i>
+                            <span id="air-trend-text">Kararlı</span>
+                        </div>
+                        <div class="mt-4 w-full bg-gray-800/80 h-1.5 rounded-full overflow-hidden">
+                            <div id="air-progress" class="bg-emerald-500 h-full w-[0%] transition-all duration-500"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-500 font-mono mt-1.5">
+                            <span>0</span>
+                            <span class="text-red-500/80">2000 (Tehlike)</span>
+                        </div>
+                    </div>
+
+                    <!-- PM2.5 Dust Card -->
+                    <div class="glass-card p-5 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
+                            <i class="fa-solid fa-smog text-6xl"></i>
+                        </div>
+                        <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">PM2.5 (Toz Yoğunluğu)</div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="pm-value" class="text-4xl font-mono font-bold">0</span>
+                            <span class="text-xs text-gray-500 font-mono">ADC</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 mt-3 text-xs text-emerald-400" id="pm-trend-container">
+                            <i class="fa-solid fa-circle-check" id="pm-trend-icon"></i>
+                            <span id="pm-trend-text">Kararlı</span>
+                        </div>
+                        <div class="mt-4 w-full bg-gray-800/80 h-1.5 rounded-full overflow-hidden">
+                            <div id="pm-progress" class="bg-emerald-500 h-full w-[0%] transition-all duration-500"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-500 font-mono mt-1.5">
+                            <span>0</span>
+                            <span class="text-red-500/80">2000 (Tehlike)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Commentary Card -->
+                <div class="glass-card p-6 bg-gradient-to-r from-[#171a2d] to-[#121422] border-l-4 border-cyan-500 relative overflow-hidden">
+                    <!-- Tech Grid BG overlay -->
+                    <div class="absolute inset-0 bg-grid opacity-[0.03] pointer-events-none"></div>
+                    
+                    <div class="flex items-start gap-4 relative z-10">
+                        <div class="bg-cyan-500/10 p-3 rounded-xl border border-cyan-500/20 text-cyan-400 shrink-0">
+                            <i class="fa-solid fa-brain-circuit text-2xl animate-pulse"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-cyan-400 tracking-wider uppercase font-mono">Yapay Zeka Analiz Raporu</h3>
+                                <span class="text-[9px] font-mono text-gray-500 bg-black/40 px-2 py-0.5 rounded uppercase tracking-widest border border-white/5 flex items-center gap-1">
+                                    <i class="fa-solid fa-bolt text-cyan-400 animate-pulse"></i> Canlı Karar Motoru
+                                </span>
+                            </div>
+                            <p id="ai-commentary-text" class="text-sm text-gray-200 mt-2 leading-relaxed font-medium">
+                                Yapay zeka veri akışını bekliyor. Analizler sensörlerden veriler gelmeye başladıktan sonra burada listelenecektir...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts (Last 1 Hour) -->
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-gray-400 tracking-wider uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-cyan-400"></i> Zaman Serisi Analizi (Son 1 Saat)
+                        </h3>
+                        <div class="flex gap-2">
+                            <button id="chart-tab-co" class="px-3 py-1 text-xs font-bold rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 transition-all duration-200">MQ-7 (CO)</button>
+                            <button id="chart-tab-air" class="px-3 py-1 text-xs font-bold rounded-lg bg-white/5 text-gray-400 border border-white/5 transition-all duration-200">MQ-135 (Hava)</button>
+                            <button id="chart-tab-pm" class="px-3 py-1 text-xs font-bold rounded-lg bg-white/5 text-gray-400 border border-white/5 transition-all duration-200">PM2.5 (Toz)</button>
+                        </div>
+                    </div>
+                    <!-- Chart wrapper -->
+                    <div class="relative h-[220px] w-full">
+                        <canvas id="timeSeriesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Event History Logs (📋 Olay Geçmişi) -->
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-gray-400 tracking-wider uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-list-ul text-cyan-400"></i> Sistem Olay Geçmişi (Logs)
+                        </h3>
+                        <button id="btn-clear-logs" class="text-xs font-semibold text-gray-500 hover:text-cyan-400 transition-colors duration-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-trash-can"></i> Temizle
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-y-auto max-h-[180px] rounded-xl border border-white/5 bg-black/30 custom-scrollbar">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead>
+                                <tr class="bg-black/60 text-gray-500 border-b border-white/5">
+                                    <th class="p-3 w-28 uppercase tracking-wider">Saat</th>
+                                    <th class="p-3 w-32 uppercase tracking-wider">Kategori</th>
+                                    <th class="p-3 uppercase tracking-wider">Olay / Bildirim</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-tbody" class="divide-y divide-white/5">
+                                <!-- Dynamic logs go here -->
+                                <tr>
+                                    <td colspan="3" class="p-4 text-center text-gray-500">Sistem olay günlüğü henüz boş. Akış bekleniyor...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-[10px] text-gray-600 font-mono tracking-widest uppercase py-4 border-t border-white/5">
+            BTÜ - MADEN ELEKTRONİK GÜVENLİK SİSTEMİ PROJESİ &copy; 2026 | TAKIM 12
+        </footer>
+
+    </div>
+
+    <!-- Paho MQTT client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Main JS -->
+    <script src="app.js"></script>
+</body>
+</html>
