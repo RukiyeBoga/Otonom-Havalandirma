@@ -48,7 +48,7 @@ Kullanılan değerler ham ESP32 ADC ölçümleridir.
 | PM2.5 | 1200 | 1400 |
 
 Gerçek kullanım öncesinde sensörlerin kalibre edilmesi ve değerlerin ppm veya µg/m³ birimlerine dönüştürülmesi gerekmektedir.
-<img width="1062" height="398" alt="Ekran görüntüsü 2026-09-27 193956" src="https://github.com/user-attachments/assets/9e443f0d-a79e-4a8a-8d16-731d2a0a5328" />
+<img width="800" height="200" alt="Ekran görüntüsü 2026-09-27 193956" src="https://github.com/user-attachments/assets/9e443f0d-a79e-4a8a-8d16-731d2a0a5328" />
 
 ## MQTT Haberleşmesi
 
@@ -71,9 +71,9 @@ Web panelinde aşağıdaki bilgiler görüntülenmektedir:
 - Yapay zekâ analiz yorumları
 - Manuel ve otomatik fan kontrolü
 
-<img width="1067" height="414" alt="Ekran görüntüsü 2026-09-27 193831" src="https://github.com/user-attachments/assets/6ca6f737-91b5-4f4b-b19d-6a51d4dd8db0" />
+<img width="800" height="300" alt="Ekran görüntüsü 2026-09-27 193831" src="https://github.com/user-attachments/assets/6ca6f737-91b5-4f4b-b19d-6a51d4dd8db0" />
 
-<img width="1061" height="401" alt="Ekran görüntüsü 2026-09-27 193932" src="https://github.com/user-attachments/assets/1b3d5350-c7f1-4fb8-949a-f2fe7a755610" />
+<img width="800" height="300" alt="Ekran görüntüsü 2026-09-27 193932" src="https://github.com/user-attachments/assets/1b3d5350-c7f1-4fb8-949a-f2fe7a755610" />
 
 ## Web Panelini Çalıştırma
 
