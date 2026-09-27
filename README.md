@@ -146,5 +146,4 @@ Wi-Fi adı ve parolası herkese açık kaynak kodunda paylaşılmamalıdır. Pro
 
 - Ders: Nesnelerin İnterneti
 - Proje: Maden Güvenliği için Akıllı Hava Kalite Sistemi
-- Takım: 12
 - Üniversite: Bursa Teknik Üniversitesi
